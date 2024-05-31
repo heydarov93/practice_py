@@ -10,9 +10,6 @@ class Task:
         self.description: str = description
         self.completed: bool = False
 
-    def __str__(self: Self) -> str:
-        pass
-
     def mark_as_completed(self):
         self.completed = True
     
@@ -40,6 +37,3 @@ class Task:
             raise TypeError('Description must be a string')
 
         self._description: str = value
-    
-    def to_dict(self: Self) -> dict[str, Union[int, str]]:
-        pass
