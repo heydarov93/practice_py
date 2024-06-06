@@ -3,6 +3,7 @@ from models.task import Task
 from models.task_manager import TaskManager
 
 import argparse
+from typing import Callable, Any
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -11,7 +12,7 @@ def parse_arguments() -> argparse.Namespace:
       description='Task management system',
       epilog="Thank's for using %(prog)s!")
 
-    subparser = parser.add_subparsers(dest='commands', help='Commands to manipulate tasks')
+    subparser = parser.add_subparsers(title='Operations', description='Commands to manipulate tasks', dest='commands', required=True)
 
     add_task = subparser.add_parser('add', help='Creates new task')
     add_task.add_argument('title', type=str, help='Title for the task')
@@ -34,22 +35,33 @@ def parse_arguments() -> argparse.Namespace:
 
 
 def main() -> None:
-    app = TaskManager()
+    app: TaskManager = TaskManager()
 
-    args = vars(parse_arguments())
+    args: dict = vars(parse_arguments())
 
-    print(args)
+    operations:dict = {
+        'add': app.add_task,
+        'remove': app.remove_task,
+        'mark': app.mark_task_completed,
+        'list': app.list_tasks,
+        'find': app.find_task,
+    }
 
-    # operations = {
-    #     'add': app.add_task,
-    #     'remove': app.remove_task,
-    #     'mark': app.mark_task_completed,
-    #     'list': app.list_tasks,
-    #     'find': app.find_task,
-    # }
-
-    # action = operations[args.commands]
-    # action()
+    if args['commands'] == 'add':
+        action: Callable[[str, str], int] = operations[args['commands']]
+        action(args['title'], args['description'])
+        return
+    
+    if args['commands'] == 'list':
+        action: Callable[[None], None] = operations[args['commands']]
+        action()
+        return
+    
+    action: Callable[[int], Any] = operations[args['commands']]
+    task = action(args['id'])
+    
+    if task:
+        print(task)
 
 if __name__ == '__main__':
     main()
