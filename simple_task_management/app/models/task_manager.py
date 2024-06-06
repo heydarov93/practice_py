@@ -17,26 +17,44 @@ class TaskManager:
                                  "new task")
         
     def add_task(self: Self, title: str, description: str) -> int:
+        from models import storage
+
         new_task: Task = Task(title, description)
-        self._tasks[str(new_task.id)] = new_task
+        storage.new(new_task)
+        storage.save()
         return new_task.id
     
     def remove_task(self: Self, id: int) -> None:
-        del self.tasks[id]
+        from models import storage
+
+        storage.delete(id)
+        storage.save()
     
     def mark_task_completed(self: Self, id: int) -> None:
-        self.tasks[id].mark_as_completed()
+        from models import storage
+
+        tasks: dict[str, Task] = storage.all()
+        tasks[id].mark_as_completed()
+
+        storage.save()
     
     def list_tasks(self: Self) -> None:
-        for task in self.tasks.values():
+        from models import storage
+
+        for task in storage.all().values():
             print(f'id: {task.id}')
             print(f'title: {task.title}')
+            print(f'description: {task.description}')
             print(f'status: {'Completed' if task.completed else 'Not completed'}')
             print('===============\n')
 
     def find_task(self: Self, id: int) -> Task:
+        from models import storage
+
         try:
-            task = self.tasks[str(id)]
+            task = storage.all()[id]
+
             return task
-        except KeyError:
-            return None      
+        except KeyError as e:
+            print('KeyError: Please enter valid task id')
+            exit(1)
