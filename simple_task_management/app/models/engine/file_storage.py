@@ -30,11 +30,13 @@ class FileStorage:
     def save(self) -> None:
         """Saves all tasks into the file"""
         with open(self.__file_path, 'w', encoding='utf-8') as afile:
-            temp: dict[int, dict[str, Any]] = {}
+            temp: dict[Any, dict[str, Any]] = {}
 
             for key, value in self.__tasks.items():
                 temp[key] = value.to_dict()
-            
+
+
+            temp['last_id'] = Task.id
             json.dump(temp, afile)
     
     def reload(self: Self) -> None:
@@ -42,6 +44,7 @@ class FileStorage:
         try:
             with open(self.__file_path, encoding='utf-8') as afile:
                 tasks = json.load(afile)
+                Task.id = tasks.pop('last_id')
 
                 for key, task_dict in tasks.items():
                     obj = Task(
@@ -51,7 +54,5 @@ class FileStorage:
 
                     obj.completed = task_dict['completed']
                     self.new(obj)
-            
-                Task.id = int(max(list(tasks)))
         except FileNotFoundError:
             pass
