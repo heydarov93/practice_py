@@ -1,8 +1,15 @@
 from typing import Self, Union
 
 class Task:
-    id: int = 0
+    """ Task class """
+    def __init__(self: Self, title: str, description: str):
+        """ Initializes new task """
+        self.title: str = title
+        self.description: str = description
 
+    # start: for file storage
+    """
+    id: int = 0
     def __init__(self: Self, title: str, description: str, id: int=None):
         if id is None:
             Task.id: int = Task.id + 1
@@ -12,7 +19,8 @@ class Task:
             self.id: int = id
         
         self.title: str = title
-        self.description: str = description
+        self.description: str = description"""
+    # end: for file storage
 
     def __str__(self: Self) -> str:
         id = f'id: {self.id}\n'
