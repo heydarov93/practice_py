@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from models.task import Task
 from models.task_manager import TaskManager
 
 import argparse
