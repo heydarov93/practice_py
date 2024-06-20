@@ -6,6 +6,7 @@ class Task:
         """ Initializes new task """
         self.title: str = title
         self.description: str = description
+        self.completed: bool = False
 
     # start: for file storage
     """
@@ -29,8 +30,12 @@ class Task:
         status = f'status: {'completed' if self.completed else 'not completed'}'
         return id + title + description + status
 
-    def mark_as_completed(self):
-        self.completed = True
+    # start: for file storage
+
+    # def mark_as_completed(self):
+    #     self.completed = True
+    
+    # end: for file storage
     
     @property
     def title(self: Self) -> str:

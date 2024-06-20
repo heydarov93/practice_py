@@ -1,11 +1,12 @@
 import psycopg2
-from typing import Self
+from typing import Self, Any
 
-from config import Config
-from models.task import Task
+from app.config import Config
+from app.models.task import Task
 
 class DBStorage:
     """ Database management class for tasks """
+
     def __init__(self: Self):
         """ Connect to the PostgreSQL database server """
         config = Config()
@@ -13,21 +14,30 @@ class DBStorage:
 
         try:             
             self.conn = psycopg2.connect(**configs)
-            self.cur = self.connection.cursor()
+            self.cur = self.conn.cursor()
         except (psycopg2.DatabaseError, Exception) as error:
             print(error)
     
     def new(self: Self, task_object: Task):
         """ Inserts new task into tasks table"""
         try:
-            title, description = task_object.to_dict()
-            sql = """INSERT INTO tasks(title, description)
-                     VALUES(%s) RETURNING id;"""
+            task_dict = task_object.to_dict()
 
-            self.cur.execute(sql, (title, description))
+            _title = task_dict['_title']
+            _description = task_dict['_description']
+            completed = task_dict['completed']
+
+            sql = """INSERT INTO tasks(title, description, completed)
+                     VALUES(%s, %s, %s) RETURNING id;"""
+
+            self.cur.execute(sql, (_title, _description, bool(completed)))
             rows = self.cur.fetchone()
-            print(rows)
+            self.conn.commit()
+
+            # get id of the last inserted task
+            return rows[0]
         except (psycopg2.DatabaseError, Exception) as error:
+            print('Error:')
             print(error)
         finally:
             self.conn.commit()
@@ -41,8 +51,9 @@ class DBStorage:
                         WHERE id = %s;"""
 
             self.cur.execute(sql, (True, id))
-            row = self.cur.fetchone()
+            row = self.cur.rowcount
             print(row)
+            self.conn.commit()
         except (psycopg2.DatabaseError, Exception) as error:
             print(error)
     
@@ -50,19 +61,45 @@ class DBStorage:
         """ Returns all tasks from database """
         try:
             
-            sql = """SELECT * FROM tasks;"""
+            sql = """SELECT * FROM tasks ORDER BY id ASC;"""
 
             self.cur.execute(sql)
             rows = self.cur.fetchall()
-            print(rows)
+            return rows
+        except (psycopg2.DatabaseError, Exception) as error:
+            print(error)
+    
+    def find(self: Self, id: int) -> tuple[Any]:
+        """ Returns all tasks from database """
+        try:
+            
+            sql = """SELECT * FROM tasks WHERE id = %s;"""
+
+            self.cur.execute(sql, (id, ))
+            row = self.cur.fetchone()
+            return row
         except (psycopg2.DatabaseError, Exception) as error:
             print(error)
 
-    def save(self: Self):
-        if self.connect:
-            self.connect.commit()
+    def delete(self: Self, id: int) -> bool:
+        """ Returns all tasks from database """
+        try:
+            
+            sql = """DELETE FROM tasks WHERE id = %s;"""
+
+            self.cur.execute(sql, (id, ))
+            rows_deleted = self.cur.rowcount
+            self.conn.commit()
+            return rows_deleted
+        except (psycopg2.DatabaseError, Exception) as error:
+            print(error)
 
     def close(self: Self):
         """ Closes the connection and the cursor """
         self.conn.close()
         self.cur.close()
+
+
+# storage = DBStorage()
+# task = Task('code', 'practice')
+# storage.new(task)
