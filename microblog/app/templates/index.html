@@ -7,5 +7,8 @@
 </head>
 <body>
   <h1>Hello, {{ user.username }}!</h1>
+  {% for post in posts %}
+  <div>{{ post.author.username }} says: <b>{{ post.body }}</b></div>
+  {% endfor %}
 </body>
 </html>
